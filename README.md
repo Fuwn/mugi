@@ -1,6 +1,6 @@
-# Mugi
+# 🍰 Mugi
 
-> Personal **Mu**lti-**Gi**t Remote Manager
+> Personal **Mu**lti-**Gi**t (or Tsu**mugi** Kotobuki, if you will) Remote Manager
 
 Mugi keeps your repositories in sync across multiple Git remotes (GitHub, Codeberg, SourceHut, etc.)
 with a single command.
