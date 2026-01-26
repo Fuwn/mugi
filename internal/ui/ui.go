@@ -109,11 +109,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case taskResult:
 		key := taskKey(msg.task)
+
 		if msg.result.Error != nil {
 			m.states[key] = taskFailed
 		} else {
 			m.states[key] = taskSuccess
 		}
+
 		m.results[key] = msg.result
 		m.currentTask++
 
@@ -177,11 +179,14 @@ func (m Model) View() string {
 
 	if m.done {
 		b.WriteString("\n")
+
 		success, failed := m.summary()
+
 		if failed > 0 {
 			b.WriteString(failStyle.Render(fmt.Sprintf("%d failed", failed)))
 			b.WriteString(", ")
 		}
+
 		b.WriteString(successStyle.Render(fmt.Sprintf("%d succeeded", success)))
 		b.WriteString("\n")
 	}
@@ -433,10 +438,12 @@ func (m InitModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else {
 			m.states[msg.init.Path] = taskFailed
 		}
+
 		m.results[msg.init.Path] = msg.result
 
 		if m.allDone() {
 			m.done = true
+
 			return m, tea.Quit
 		}
 	}
