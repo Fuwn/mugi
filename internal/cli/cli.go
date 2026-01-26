@@ -15,6 +15,7 @@ type Command struct {
 	Remotes    []string
 	ConfigPath string
 	Verbose    bool
+	Force      bool
 	Help       bool
 	Version    bool
 }
@@ -34,6 +35,7 @@ func Parse(args []string) (Command, error) {
 
 	args, cmd.ConfigPath = extractConfigFlag(args)
 	args, cmd.Verbose = extractVerboseFlag(args)
+	args, cmd.Force = extractForceFlag(args)
 
 	for _, arg := range args {
 		if arg == "-h" || arg == "--help" || arg == "help" {
@@ -100,6 +102,7 @@ Commands:
 Flags:
   -c, --config <path>  Override config file path
   -V, --verbose        Show detailed output
+  -f, --force          Force push (use with caution)
 
 Examples:
   mugi pull                      Pull all repositories from all remotes
@@ -173,4 +176,21 @@ func extractVerboseFlag(args []string) ([]string, bool) {
 	}
 
 	return remaining, verbose
+}
+
+func extractForceFlag(args []string) ([]string, bool) {
+	var remaining []string
+	var force bool
+
+	for _, arg := range args {
+		if arg == "-f" || arg == "--force" {
+			force = true
+
+			continue
+		}
+
+		remaining = append(remaining, arg)
+	}
+
+	return remaining, force
 }

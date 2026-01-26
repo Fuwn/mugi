@@ -44,10 +44,11 @@ type Model struct {
 	spinner   spinner.Model
 	operation remote.Operation
 	verbose   bool
+	force     bool
 	done      bool
 }
 
-func NewModel(op remote.Operation, tasks []Task, verbose bool) Model {
+func NewModel(op remote.Operation, tasks []Task, verbose, force bool) Model {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
@@ -65,6 +66,7 @@ func NewModel(op remote.Operation, tasks []Task, verbose bool) Model {
 		spinner:   s,
 		operation: op,
 		verbose:   verbose,
+		force:     force,
 	}
 }
 
@@ -180,7 +182,7 @@ func (m *Model) runTask(task Task) tea.Cmd {
 			op = m.operation
 		}
 
-		result := git.Execute(context.Background(), op, task.RepoPath, task.RemoteName)
+		result := git.Execute(context.Background(), op, task.RepoPath, task.RemoteName, m.force)
 
 		return taskResult{task: task, result: result}
 	}
@@ -226,7 +228,7 @@ func indentOutput(s string, style lipgloss.Style) string {
 	return strings.Join(lines, "\n")
 }
 
-func Run(op remote.Operation, tasks []Task, verbose bool) error {
+func Run(op remote.Operation, tasks []Task, verbose, force bool) error {
 	if op == remote.Pull {
 		inits := NeedsInit(tasks)
 		if len(inits) > 0 {
@@ -242,7 +244,7 @@ func Run(op remote.Operation, tasks []Task, verbose bool) error {
 		tasks = adjustPullTasks(tasks)
 	}
 
-	model := NewModel(op, tasks, verbose)
+	model := NewModel(op, tasks, verbose, force)
 	p := tea.NewProgram(model)
 
 	_, err := p.Run()
