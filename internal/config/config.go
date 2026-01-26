@@ -205,6 +205,10 @@ func Path() (string, error) {
 }
 
 func (c Config) FindRepo(name string) (string, Repo, bool) {
+	if name == "." {
+		return c.FindRepoByPath(".")
+	}
+
 	if repo, ok := c.Repos[name]; ok {
 		return name, repo, true
 	}
@@ -275,4 +279,26 @@ func (d Defaults) RemotesFor(operation string) []string {
 	}
 
 	return d.Remotes
+}
+
+func (c Config) FindRepoByPath(path string) (string, Repo, bool) {
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return "", Repo{}, false
+	}
+
+	for name, repo := range c.Repos {
+		repoPath := repo.ExpandPath()
+
+		absRepoPath, err := filepath.Abs(repoPath)
+		if err != nil {
+			continue
+		}
+
+		if absPath == absRepoPath {
+			return name, repo, true
+		}
+	}
+
+	return "", Repo{}, false
 }
