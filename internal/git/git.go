@@ -41,13 +41,13 @@ func (r *Result) setError(err error) {
 	}
 }
 
-func Execute(ctx context.Context, op remote.Operation, repoPath, remoteName string) Result {
+func Execute(ctx context.Context, op remote.Operation, repoPath, remoteName string, force bool) Result {
 	result := Result{
 		Repo:   repoPath,
 		Remote: remoteName,
 	}
 
-	args := buildArgs(op, remoteName, repoPath)
+	args := buildArgs(op, remoteName, repoPath, force)
 	cmd := exec.CommandContext(ctx, "git", args...)
 	cmd.Dir = repoPath
 	cmd.Env = gitEnv()
@@ -66,15 +66,20 @@ func Execute(ctx context.Context, op remote.Operation, repoPath, remoteName stri
 	return result
 }
 
-func buildArgs(op remote.Operation, remoteName, repoPath string) []string {
+func buildArgs(op remote.Operation, remoteName, repoPath string, force bool) []string {
 	switch op {
 	case remote.Pull:
 		branch := currentBranch(repoPath)
 		if branch == "" {
 			branch = "HEAD"
 		}
+
 		return []string{"pull", remoteName, branch}
 	case remote.Push:
+		if force {
+			return []string{"push", "--force", remoteName}
+		}
+
 		return []string{"push", remoteName}
 	case remote.Fetch:
 		return []string{"fetch", remoteName}
