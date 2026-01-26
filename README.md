@@ -17,6 +17,9 @@ mugi push windmark gh cb       # Push Windmark to GitHub and Codeberg
 mugi fetch gemrest/september   # Fetch specific repository
 ```
 
+<br>
+<p align="center"><img src="./assets/example_output.png" alt="Example Output Screenshot" width="50%"></p>
+
 ### Installation
 
 ```bash
