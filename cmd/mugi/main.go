@@ -41,10 +41,30 @@ func run() error {
 		return fmt.Errorf("config: %w", err)
 	}
 
+	applyDefaults(&cmd, cfg)
+
 	tasks := ui.BuildTasks(cfg, cmd.Repo, cmd.Remotes)
 	if len(tasks) == 0 {
 		return fmt.Errorf("no matching repositories or remotes found")
 	}
 
 	return ui.Run(cmd.Operation, tasks, cmd.Verbose, cmd.Force, cmd.Linear)
+}
+
+func applyDefaults(cmd *cli.Command, cfg config.Config) {
+	if cfg.Defaults.Verbose {
+		cmd.Verbose = true
+	}
+
+	if cfg.Defaults.Linear {
+		cmd.Linear = true
+	}
+
+	if len(cmd.Remotes) == 1 && cmd.Remotes[0] == "all" {
+		opRemotes := cfg.Defaults.RemotesFor(cmd.Operation.String())
+
+		if len(opRemotes) > 0 {
+			cmd.Remotes = opRemotes
+		}
+	}
 }
