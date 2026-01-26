@@ -38,17 +38,19 @@ type taskResult struct {
 }
 
 type Model struct {
-	tasks     []Task
-	states    map[string]taskState
-	results   map[string]git.Result
-	spinner   spinner.Model
-	operation remote.Operation
-	verbose   bool
-	force     bool
-	done      bool
+	tasks       []Task
+	states      map[string]taskState
+	results     map[string]git.Result
+	spinner     spinner.Model
+	operation   remote.Operation
+	verbose     bool
+	force       bool
+	linear      bool
+	currentTask int
+	done        bool
 }
 
-func NewModel(op remote.Operation, tasks []Task, verbose, force bool) Model {
+func NewModel(op remote.Operation, tasks []Task, verbose, force, linear bool) Model {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
@@ -67,6 +69,7 @@ func NewModel(op remote.Operation, tasks []Task, verbose, force bool) Model {
 		operation: op,
 		verbose:   verbose,
 		force:     force,
+		linear:    linear,
 	}
 }
 
@@ -77,8 +80,14 @@ func taskKey(t Task) string {
 func (m Model) Init() tea.Cmd {
 	cmds := []tea.Cmd{m.spinner.Tick}
 
-	for _, task := range m.tasks {
-		cmds = append(cmds, m.runTask(task))
+	if m.linear {
+		if len(m.tasks) > 0 {
+			cmds = append(cmds, m.runTask(m.tasks[0]))
+		}
+	} else {
+		for _, task := range m.tasks {
+			cmds = append(cmds, m.runTask(task))
+		}
 	}
 
 	return tea.Batch(cmds...)
@@ -106,10 +115,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.states[key] = taskSuccess
 		}
 		m.results[key] = msg.result
+		m.currentTask++
 
 		if m.allDone() {
 			m.done = true
+
 			return m, tea.Quit
+		}
+
+		if m.linear && m.currentTask < len(m.tasks) {
+			return m, m.runTask(m.tasks[m.currentTask])
 		}
 	}
 
@@ -228,7 +243,7 @@ func indentOutput(s string, style lipgloss.Style) string {
 	return strings.Join(lines, "\n")
 }
 
-func Run(op remote.Operation, tasks []Task, verbose, force bool) error {
+func Run(op remote.Operation, tasks []Task, verbose, force, linear bool) error {
 	if op == remote.Pull {
 		inits := NeedsInit(tasks)
 		if len(inits) > 0 {
@@ -244,7 +259,7 @@ func Run(op remote.Operation, tasks []Task, verbose, force bool) error {
 		tasks = adjustPullTasks(tasks)
 	}
 
-	model := NewModel(op, tasks, verbose, force)
+	model := NewModel(op, tasks, verbose, force, linear)
 	p := tea.NewProgram(model)
 
 	_, err := p.Run()

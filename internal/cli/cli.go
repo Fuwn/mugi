@@ -16,6 +16,7 @@ type Command struct {
 	ConfigPath string
 	Verbose    bool
 	Force      bool
+	Linear     bool
 	Help       bool
 	Version    bool
 }
@@ -36,6 +37,7 @@ func Parse(args []string) (Command, error) {
 	args, cmd.ConfigPath = extractConfigFlag(args)
 	args, cmd.Verbose = extractVerboseFlag(args)
 	args, cmd.Force = extractForceFlag(args)
+	args, cmd.Linear = extractLinearFlag(args)
 
 	for _, arg := range args {
 		if arg == "-h" || arg == "--help" || arg == "help" {
@@ -103,6 +105,7 @@ Flags:
   -c, --config <path>  Override config file path
   -V, --verbose        Show detailed output
   -f, --force          Force push (use with caution)
+  -l, --linear         Run operations sequentially
 
 Examples:
   mugi pull                      Pull all repositories from all remotes
@@ -193,4 +196,21 @@ func extractForceFlag(args []string) ([]string, bool) {
 	}
 
 	return remaining, force
+}
+
+func extractLinearFlag(args []string) ([]string, bool) {
+	var remaining []string
+	var linear bool
+
+	for _, arg := range args {
+		if arg == "-l" || arg == "--linear" {
+			linear = true
+
+			continue
+		}
+
+		remaining = append(remaining, arg)
+	}
+
+	return remaining, linear
 }

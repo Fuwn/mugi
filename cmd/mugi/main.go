@@ -46,5 +46,5 @@ func run() error {
 		return fmt.Errorf("no matching repositories or remotes found")
 	}
 
-	return ui.Run(cmd.Operation, tasks, cmd.Verbose, cmd.Force)
+	return ui.Run(cmd.Operation, tasks, cmd.Verbose, cmd.Force, cmd.Linear)
 }
