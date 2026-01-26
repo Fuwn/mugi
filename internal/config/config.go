@@ -14,9 +14,18 @@ type RemoteDefinition struct {
 	URL     string   `yaml:"url"`
 }
 
+type OperationDefaults struct {
+	Remotes []string `yaml:"remotes"`
+}
+
 type Defaults struct {
-	Remotes    []string `yaml:"remotes"`
-	PathPrefix string   `yaml:"path_prefix"`
+	Remotes    []string          `yaml:"remotes"`
+	PathPrefix string            `yaml:"path_prefix"`
+	Verbose    bool              `yaml:"verbose"`
+	Linear     bool              `yaml:"linear"`
+	Pull       OperationDefaults `yaml:"pull"`
+	Push       OperationDefaults `yaml:"push"`
+	Fetch      OperationDefaults `yaml:"fetch"`
 }
 
 type RepoRemotes map[string]string
@@ -247,4 +256,23 @@ func (r Repo) ExpandPath() string {
 	}
 
 	return path
+}
+
+func (d Defaults) RemotesFor(operation string) []string {
+	switch operation {
+	case "pull":
+		if len(d.Pull.Remotes) > 0 {
+			return d.Pull.Remotes
+		}
+	case "push":
+		if len(d.Push.Remotes) > 0 {
+			return d.Push.Remotes
+		}
+	case "fetch":
+		if len(d.Fetch.Remotes) > 0 {
+			return d.Fetch.Remotes
+		}
+	}
+
+	return d.Remotes
 }

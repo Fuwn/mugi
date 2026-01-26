@@ -12,6 +12,14 @@ remotes:
 defaults:
   remotes: [github, codeberg, sourcehut]
   path_prefix: ~/Developer
+  verbose: false
+  linear: false
+  pull:
+    remotes: [github]
+  push:
+    remotes: [github, codeberg, sourcehut]
+  fetch:
+    remotes: [github, codeberg, sourcehut]
 
 repos:
   gemrest/windmark: {}
