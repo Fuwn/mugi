@@ -84,7 +84,7 @@ func buildArgs(op remote.Operation, remoteName, repoPath string, force bool) []s
 	case remote.Fetch:
 		return []string{"fetch", remoteName}
 	default:
-		return []string{}
+		return nil
 	}
 }
 
