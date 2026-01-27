@@ -69,23 +69,28 @@ Usage:
   mugi [flags] <command> [repo] [remotes...]
 
 Commands:
-  pull    Pull from remote(s)
-  push    Push to remote(s)
-  fetch   Fetch from remote(s)
-  help    Show this help
-  version Show version
+  pull          Pull from remote(s)
+  push          Push to remote(s)
+  fetch         Fetch from remote(s)
+  add <path>    Add repository to config
+  rm <name>     Remove repository from config
+  list          List tracked repositories
+  help          Show this help
+  version       Show version
 
 Flags:
   -c, --config <path>  Override config file path
   -V, --verbose        Show detailed output
+  -f, --force          Force push (use with caution)
+  -l, --linear         Run operations sequentially
 
 Examples:
   mugi pull                      Pull all repositories from all remotes
-  mugi pull windmark             Pull Windmark from all remotes
-  mugi pull windmark github      Pull Windmark from GitHub only
-  mugi push windmark gh cb       Push Windmark to GitHub and Codeberg
-  mugi fetch gemrest/september   Fetch specific repository
-  mugi -c ./test.yaml pull       Use custom config
+  mugi push windmark gh cb       Push to GitHub and Codeberg
+  mugi add .                     Add current directory to config
+  mugi add ~/Developer/mugi      Add repository at path
+  mugi rm mugi                   Remove repository from config
+  mugi list                      List all tracked repositories
 ```
 
 ## Licence
