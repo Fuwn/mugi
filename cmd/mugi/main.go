@@ -6,6 +6,7 @@ import (
 
 	"github.com/ebisu/mugi/internal/cli"
 	"github.com/ebisu/mugi/internal/config"
+	"github.com/ebisu/mugi/internal/manage"
 	"github.com/ebisu/mugi/internal/ui"
 )
 
@@ -36,7 +37,49 @@ func run() error {
 		return nil
 	}
 
-	cfg, err := config.Load(cmd.ConfigPath)
+	configPath := cmd.ConfigPath
+	if configPath == "" {
+		configPath, _ = config.Path()
+	}
+
+	switch cmd.Type {
+	case cli.CommandAdd:
+		cfg, err := config.Load(configPath)
+		if err != nil {
+			return fmt.Errorf("config: %w", err)
+		}
+
+		if err := manage.Add(cmd.Path, configPath, cfg.Remotes); err != nil {
+			return err
+		}
+
+		fmt.Printf("Added repository: %s\n", cmd.Path)
+
+		return nil
+
+	case cli.CommandRemove:
+		if err := manage.Remove(cmd.Repo, configPath); err != nil {
+			return err
+		}
+
+		fmt.Printf("Removed repository: %s\n", cmd.Repo)
+
+		return nil
+
+	case cli.CommandList:
+		repos, err := manage.List(configPath)
+		if err != nil {
+			return err
+		}
+
+		for _, repo := range repos {
+			fmt.Printf("%s (%s)\n", repo.Name, repo.Path)
+		}
+
+		return nil
+	}
+
+	cfg, err := config.Load(configPath)
 	if err != nil {
 		return fmt.Errorf("config: %w", err)
 	}
