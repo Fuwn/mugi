@@ -9,10 +9,21 @@ import (
 	"github.com/ebisu/mugi/internal/remote"
 )
 
+type CommandType int
+
+const (
+	CommandOperation CommandType = iota
+	CommandAdd
+	CommandRemove
+	CommandList
+)
+
 type Command struct {
+	Type       CommandType
 	Operation  remote.Operation
 	Repo       string
 	Remotes    []string
+	Path       string
 	ConfigPath string
 	Verbose    bool
 	Force      bool
@@ -61,11 +72,38 @@ func Parse(args []string) (Command, error) {
 
 	switch args[0] {
 	case "pull":
+		cmd.Type = CommandOperation
 		cmd.Operation = remote.Pull
 	case "push":
+		cmd.Type = CommandOperation
 		cmd.Operation = remote.Push
 	case "fetch":
+		cmd.Type = CommandOperation
 		cmd.Operation = remote.Fetch
+	case "add":
+		cmd.Type = CommandAdd
+
+		if len(args) < 2 {
+			cmd.Path = "."
+		} else {
+			cmd.Path = args[1]
+		}
+
+		return cmd, nil
+	case "rm", "remove":
+		cmd.Type = CommandRemove
+
+		if len(args) < 2 {
+			return cmd, fmt.Errorf("rm requires a repository name")
+		}
+
+		cmd.Repo = args[1]
+
+		return cmd, nil
+	case "list", "ls":
+		cmd.Type = CommandList
+
+		return cmd, nil
 	default:
 		return cmd, fmt.Errorf("%w: %s", ErrUnknownCommand, args[0])
 	}
@@ -95,11 +133,14 @@ Usage:
   mugi [flags] <command> [repo] [remotes...]
 
 Commands:
-  pull    Pull from remote(s)
-  push    Push to remote(s)
-  fetch   Fetch from remote(s)
-  help    Show this help
-  version Show version
+  pull          Pull from remote(s)
+  push          Push to remote(s)
+  fetch         Fetch from remote(s)
+  add <path>    Add repository to config
+  rm <name>     Remove repository from config
+  list          List tracked repositories
+  help          Show this help
+  version       Show version
 
 Flags:
   -c, --config <path>  Override config file path
@@ -109,11 +150,11 @@ Flags:
 
 Examples:
   mugi pull                      Pull all repositories from all remotes
-  mugi pull windmark             Pull Windmark from all remotes
-  mugi pull windmark github      Pull Windmark from GitHub only
-  mugi push windmark gh cb       Push Windmark to GitHub and Codeberg
-  mugi fetch gemrest/september   Fetch specific repository
-  mugi -c ./test.yaml pull       Use custom config
+  mugi push windmark gh cb       Push to GitHub and Codeberg
+  mugi add .                     Add current directory to config
+  mugi add ~/Developer/mugi      Add repository at path
+  mugi rm mugi                   Remove repository from config
+  mugi list                      List all tracked repositories
 
 Config: ` + configPath()
 }
